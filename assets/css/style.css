@@ -1,0 +1,54 @@
+.wrap-featured-sorting .tablenav .actions select {
+    max-width: 300px;
+}
+.wrap-featured-sorting .form-featured-sorting .select2-container--default .select2-selection--single {
+    height: 30px;
+}
+.wrap-featured-sorting .form-featured-sorting .option-item {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+}
+.wrap-featured-sorting .form-featured-sorting .img-select2 {
+    width: 24px;
+    height: auto;
+    margin-right: 5px;
+}
+.wrap-featured-sorting .form-featured-sorting input[type=submit].loading {
+    background-image: url("../images/btn-loading.gif") !important;
+    background-size: 14px !important;
+    background-repeat: no-repeat !important;
+    background-position: 92% 50% !important;
+    padding-right: 30px;
+}
+.wrap-featured-sorting .wp-list-table {
+    margin-top: 30px;
+}
+.wrap-featured-sorting .wp-list-table tbody tr {
+    width: 100%;
+}
+.wrap-featured-sorting .wp-list-table tbody td {
+    height: auto;
+    vertical-align: middle;
+}
+.wrap-featured-sorting .wp-list-table tbody td.column-title strong {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+}
+.wrap-featured-sorting .wp-list-table .ui-sortable .ui-sortable-handle {
+    cursor: move;
+}
+.wrap-featured-sorting .wp-list-table .ui-sortable .ui-sortable-helper {
+    display: table;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+.wrap-featured-sorting .wp-list-table .ui-sortable .ui-state-highlight {
+    background-color: rgba(0, 124, 186, 0.2);
+}
