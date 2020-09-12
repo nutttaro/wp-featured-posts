@@ -1,0 +1,95 @@
+# Copyright (C) 2020 NuttTaro
+# This file is distributed under the same license as the WP Featured Posts plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: WP Featured Posts 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-featured-posts\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2020-09-12T19:12:10+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.4.0\n"
+"X-Domain: wp-featured-posts\n"
+
+#. Plugin Name of the plugin
+msgid "WP Featured Posts"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://wordpress.org/plugins/wp-featured-posts/"
+msgstr ""
+
+#. Description of the plugin
+msgid "Set featured posts, sortable and sticky custom post type. Compatible with WPML."
+msgstr ""
+
+#. Author of the plugin
+msgid "NuttTaro"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://nutttaro.com"
+msgstr ""
+
+#: inc/wp-featured-posts-setting.php:43
+#: inc/wp-featured-posts-setting.php:68
+msgid "Featured Posts Setting"
+msgstr ""
+
+#: inc/wp-featured-posts-setting.php:44
+msgid "Featured Posts"
+msgstr ""
+
+#: inc/wp-featured-posts-setting.php:101
+#: inc/wp-featured-posts-setting.php:164
+msgid "Enable"
+msgstr ""
+
+#: inc/wp-featured-posts-setting.php:109
+msgid "Post Types"
+msgstr ""
+
+#: inc/wp-featured-posts-setting.php:117
+msgid "Sticky Featured Posts"
+msgstr ""
+
+#: inc/wp-featured-posts-setting.php:207
+msgid "Enable Sticky for"
+msgstr ""
+
+#: inc/wp-featured-posts-setting.php:220
+msgid "How to query featured posts"
+msgstr ""
+
+#: inc/wp-featured-posts-setting.php:223
+msgid "[Show]"
+msgstr ""
+
+#: inc/wp-featured-posts-setting.php:224
+msgid "[Hide]"
+msgstr ""
+
+#: inc/wp-featured-posts-setting.php:230
+msgid "Example code for query featured posts"
+msgstr ""
+
+#: wp-featured-posts.php:130
+#: wp-featured-posts.php:131
+#: wp-featured-posts.php:156
+msgid "Featured %s"
+msgstr ""
+
+#: wp-featured-posts.php:439
+msgid "Featured"
+msgstr ""
+
+#: wp-featured-posts.php:466
+msgid "Yes"
+msgstr ""
+
+#: wp-featured-posts.php:468
+msgid "No"
+msgstr ""
