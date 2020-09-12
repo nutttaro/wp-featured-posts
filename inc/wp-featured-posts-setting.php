@@ -15,8 +15,22 @@ class WPFP_Featured_Posts_Setting
      */
     public function __construct()
     {
+        add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts'], 99);
         add_action('admin_menu', [$this, 'add_settings_page']);
         add_action('admin_init', [$this, 'page_init']);
+    }
+
+    /**
+     * Enqueue Scripts
+     *
+     * @param $hook
+     */
+    public function admin_enqueue_scripts($hook)
+    {
+        if ($hook === 'toplevel_page_wp-featured-posts-settings-page') {
+            wp_enqueue_script('google-code-prettify', 'https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js', [], WPFP_VERSION, true);
+            wp_enqueue_script('admin-featured-sorting-setting', WPFP_PLUGIN_URL . '/assets/js/setting.min.js', ['jquery'], WPFP_VERSION, true);
+        }
     }
 
     /**
@@ -42,8 +56,9 @@ class WPFP_Featured_Posts_Setting
     {
 
         $default = [
-            'enable'     => 0,
-            'post_types' => [],
+            'enable'           => 0,
+            'post_types'       => [],
+            'sticky_post_type' => []
         ];
 
         // Set class property
@@ -91,10 +106,25 @@ class WPFP_Featured_Posts_Setting
 
         add_settings_field(
             'wp-featured-posts', // ID
-            __('Taxonomies', 'wp-featured-posts'), // Title
+            __('Post Types', 'wp-featured-posts'), // Title
             [$this, 'post_types_field'], // Callback
             'wp-featured-posts-settings-page', // Page
             'wp_featured_posts_settings_section'
+        );
+
+        add_settings_field(
+            'wp-featured-posts-sticky', // ID
+            __('Sticky Featured Posts', 'wp-featured-posts'), // Title
+            [$this, 'sticky_post_type_field'], // Callback
+            'wp-featured-posts-settings-page', // Page
+            'wp_featured_posts_settings_section'
+        );
+
+        add_settings_section(
+            'wp_featured_sticky_posts_settings_section', // ID
+            '', // Title
+            [$this, 'wp_featured_sticky_posts_settings_section'], // Callback
+            'wp-featured-posts-settings-page' // Page
         );
     }
 
@@ -114,6 +144,9 @@ class WPFP_Featured_Posts_Setting
 
         if (isset($input['post_types']))
             $sanitized_input['post_types'] = $input['post_types'];
+
+        if (isset($input['sticky_post_type']))
+            $sanitized_input['sticky_post_type'] = $input['sticky_post_type'];
 
         return $sanitized_input;
     }
@@ -136,7 +169,7 @@ class WPFP_Featured_Posts_Setting
         $post_types = $this->options['post_types'] ?? [];
 
         $args = [
-            'public'   => true,
+            'public' => true,
         ];
 
         $get_post_types = get_post_types($args, 'objects');
@@ -152,6 +185,67 @@ class WPFP_Featured_Posts_Setting
                 }
             }
         }
+    }
+
+    public function sticky_post_type_field()
+    {
+        $post_types = $this->options['post_types'] ?? [];
+        $sticky_post_type = $this->options['sticky_post_type'] ?? [];
+
+        $args = [
+            'public' => true,
+        ];
+
+        $get_post_types = get_post_types($args, 'objects');
+
+        if ($get_post_types) {
+            foreach ($get_post_types as $post_type) {
+                if (!in_array($post_type->name, ['attachment']) && in_array($post_type->name, $post_types)) {
+                    $is_checked = in_array($post_type->name, $sticky_post_type);
+                    printf(
+                        '<p><label for="wp-sticky-post-type-%s"><input name="wp_featured_posts_settings[sticky_post_type][]" type="checkbox" id="wp-sticky-post-type-%s" value="%s" %s> %s (%s)</label></p>',
+                        $post_type->name, $post_type->name, $post_type->name, checked($is_checked, true, false), __('Enable Sticky for', 'wp-featured-posts') . ' ' . $post_type->label, $post_type->name
+                    );
+                }
+            }
+        }
+    }
+
+
+    public function wp_featured_sticky_posts_settings_section()
+    {
+        ?>
+        <div class="how-to-query-featured-posts">
+            <div class="title">
+                <h3><?php _e('How to query featured posts', 'wp-featured-posts'); ?>
+                    <a href="#" class="wpfp-toggle-expand" data-expand="#wpfp-code">
+                        <small>
+                            <span class="show"><?php _e('[Show]', 'wp-featured-posts'); ?></span>
+                            <span class="hide" style="display: none;"><?php _e('[Hide]', 'wp-featured-posts'); ?></span>
+                        </small>
+                    </a>
+                </h3>
+            </div>
+            <div id="wpfp-code" class="code" style="display: none;">
+                <h5><?php _e('Example code for query featured posts', 'wp-featured-posts'); ?></h5>
+<pre class="prettyprint">
+$args = [
+    'post_type'        => 'post',
+    'post_status'      => 'publish',
+    'orderby'          => ['menu_order' => 'ASC', 'date' => 'DESC'],
+    'meta_query'       => [
+        [
+            'key'   => 'post_featured', // {post_type_name}_featured example page_featured, news_featured etc..
+            'value' => '1'
+        ]
+    ]
+];
+$posts = get_posts($args);
+</pre>
+            </div>
+        </div>
+
+        <?php
     }
 
 }

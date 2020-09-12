@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       WP Featured Posts
  * Plugin URI:        https://wordpress.org/plugins/wp-featured-posts/
- * Description:       Set featured posts and sortable. Compatible with WPML.
+ * Description:       Set featured posts, sortable and sticky custom post type. Compatible with WPML.
  * Version:           1.0.0
  * Requires at least: 4.7
  * Requires PHP:      7.0
@@ -59,11 +59,15 @@ class WPFP_Featured_Posts
         add_action('wp_ajax_delete_featured_sorting', [$this, 'delete_featured_sorting']);
         add_action('wp_ajax_order_featured_sorting', [$this, 'order_featured_sorting']);
 
+        add_action('pre_get_posts', [$this, 'pre_get_posts']);
+        add_filter('the_posts', [$this, 'the_posts'], 10, 2);
+
         new WPFP_Featured_Posts_Setting();
 
         $default = [
-            'enable'     => 0,
-            'post_types' => [],
+            'enable'           => 0,
+            'post_types'       => [],
+            'sticky_post_type' => []
         ];
 
         $this->options = get_option('wp_featured_posts_settings', $default);
@@ -92,9 +96,9 @@ class WPFP_Featured_Posts
 
         if ($this->options['enable'] && in_array($post_type, $this->options['post_types'])) {
 
-            wp_enqueue_style('admin-featured-sorting', WPFP_PLUGIN_URL . '/assets/css/style.css', [], WPFP_VERSION);
+            wp_enqueue_style('admin-featured-sorting', WPFP_PLUGIN_URL . '/assets/css/style.min.css', [], WPFP_VERSION);
 
-            wp_enqueue_script('admin-featured-sorting', WPFP_PLUGIN_URL . '/assets/js/main.js', ['jquery', 'jquery-ui-sortable'], WPFP_VERSION, true);
+            wp_enqueue_script('admin-featured-sorting', WPFP_PLUGIN_URL . '/assets/js/main.min.js', ['jquery', 'jquery-ui-sortable'], WPFP_VERSION, true);
 
             wp_localize_script('admin-featured-sorting', 'wtfp_admin_global',
                 [
@@ -232,19 +236,25 @@ class WPFP_Featured_Posts
 
         if ($featured_sorting) {
 
+            $post_id = absint($data['post_id']);
+
             // Update
             $args = [
-                'ID'         => $data['post_id'],
+                'ID'         => $post_id,
                 'menu_order' => $featured_sorting
             ];
             $update = wp_update_post($args);
-            update_post_meta($data['post_id'], $data['featured_key'], 1);
+            update_post_meta($post_id, $data['featured_key'], 1);
+
+            $sticky_posts = get_option('sticky_posts', []);
+            $sticky_posts = array_merge($sticky_posts, [$post_id]);
+            update_option('sticky_posts', $sticky_posts);
 
             if (WPFP_WPML::is_active()) {
                 $post_type = $data['post_type'] ?? '';
-                $trid = apply_filters('wpml_element_trid', NULL, $data['post_id'], 'post_' . $post_type);
+                $trid = apply_filters('wpml_element_trid', NULL, $post_id, 'post_' . $post_type);
                 if ($trid) {
-                    $ids = WPFP_WPML::wpml_get_post_ids($data['post_id']);
+                    $ids = WPFP_WPML::wpml_get_post_ids($post_id);
                     if ($ids) {
                         foreach ($ids as $lang => $id) {
                             if ($data['lang'] != $lang) {
@@ -256,6 +266,10 @@ class WPFP_Featured_Posts
                                 $update = wp_update_post($args);
 
                                 update_post_meta($id, $data['featured_key'], 1);
+
+                                $sticky_posts = get_option('sticky_posts', []);
+                                $sticky_posts = array_merge($sticky_posts, [$id]);
+                                update_option('sticky_posts', $sticky_posts);
                             }
                         }
                     }
@@ -295,18 +309,46 @@ class WPFP_Featured_Posts
         }
         $data['_redirect'] = admin_url($_redirect);
 
+        $post_id = absint($data['post_id']);
+
         // Delete
-        $delete = update_post_meta($data['post_id'], $data['featured_key'], '0');
+        $delete = delete_post_meta($post_id, $data['featured_key']);
+
+        // Update
+        $args = [
+            'ID'         => $post_id,
+            'menu_order' => 0
+        ];
+        $update = wp_update_post($args);
+
+        $sticky_posts = get_option('sticky_posts', []);
+        if (($key = array_search($post_id, $sticky_posts)) !== false) {
+            unset($sticky_posts[$key]);
+        }
+        update_option('sticky_posts', $sticky_posts);
 
         if (WPFP_WPML::is_active()) {
             $post_type = $data['post_type'] ?? '';
-            $trid = apply_filters('wpml_element_trid', NULL, $data['post_id'], 'post_' . $post_type);
+            $trid = apply_filters('wpml_element_trid', NULL, $post_id, 'post_' . $post_type);
             if ($trid) {
-                $ids = WPFP_WPML::wpml_get_post_ids($data['post_id']);
+                $ids = WPFP_WPML::wpml_get_post_ids($post_id);
                 if ($ids) {
                     foreach ($ids as $lang => $id) {
                         if ($data['lang'] != $lang) {
-                            $delete = update_post_meta($id, $data['featured_key'], '0');
+                            $delete = delete_post_meta($id, $data['featured_key']);
+
+                            // Update
+                            $args = [
+                                'ID'         => $id,
+                                'menu_order' => 0
+                            ];
+                            $update = wp_update_post($args);
+
+                            $sticky_posts = get_option('sticky_posts', []);
+                            if (($key = array_search($id, $sticky_posts)) !== false) {
+                                unset($sticky_posts[$key]);
+                            }
+                            update_option('sticky_posts', $sticky_posts);
                         }
                     }
                 }
@@ -335,11 +377,13 @@ class WPFP_Featured_Posts
 
         $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-        if ($data['post_id'] && is_array($data['post_id'])) {
+        $post_ids = $data['post_id'];
+
+        if ($post_ids && is_array($post_ids)) {
 
             $post_type = $data['post_type'] ?? '';
 
-            foreach ($data['post_id'] as $key => $post_id) {
+            foreach ($post_ids as $key => $post_id) {
 
                 update_post_meta($post_id, $data['featured_key'], '1');
                 $args = [
@@ -435,13 +479,137 @@ class WPFP_Featured_Posts
      * @param $post_type
      * @return string[]|WP_Post_Type[]
      */
-    protected function get_post_type($post_type) {
+    protected function get_post_type($post_type)
+    {
         return get_post_types(['name' => $post_type], 'objects');
+    }
+
+    /**
+     * Set featured post to top
+     *
+     * @param $wp_query
+     * @return mixed
+     */
+    public function pre_get_posts($wp_query)
+    {
+        if (!is_admin() && $wp_query->is_main_query()) {
+            if ($this->options['enable'] && $this->options['sticky_post_type']) {
+
+                foreach ($this->options['sticky_post_type'] as $sticky_post_type) {
+
+                    if ($wp_query->is_home() && $sticky_post_type == 'post' || $wp_query->get('post_type') == $sticky_post_type) {
+
+                        // Get original meta query
+                        $meta_query = $wp_query->get('meta_query');
+
+                        if (empty($meta_query)) {
+                            $meta_query = [];
+                        }
+
+                        // Add our meta query to the original meta queries
+                        $meta_query[] = [
+                            'relation' => 'OR',
+                            [
+                                'key'     => "{$sticky_post_type}_featured",
+                                'compare' => 'NOT EXISTS'
+                            ],
+                            [
+                                'key'     => "{$sticky_post_type}_featured",
+                                'compare' => 'EXISTS'
+                            ]
+                        ];
+                        $wp_query->set('meta_query', $meta_query);
+
+                        $wp_query->set('orderby', ['menu_order' => 'ASC', 'date' => 'DESC']);
+                    }
+
+                }
+
+            }
+        }
+
+        return $wp_query;
+    }
+
+    /**
+     * Make sticky post for custom post type.
+     *
+     * @param $posts
+     * @param $wp_query
+     * @return mixed
+     */
+    public function the_posts($posts, $wp_query)
+    {
+        $post_type = $wp_query->query_vars['post_type'];
+        if (!is_admin() && $wp_query->is_main_query() && $this->options['enable'] && in_array($post_type, $this->options['sticky_post_type'])) {
+
+            $page = 1;
+            if (empty($wp_query->query_vars['nopaging']) && !$wp_query->is_singular) {
+                $page = absint($wp_query->query_vars['paged']);
+                if (empty($page)) {
+                    $page = 1;
+                }
+            }
+
+            /**
+             * Sticky Posts
+             * ref: wp-includes/class-wp-query.php
+             * line 3131 to 3137
+             */
+            // Put sticky posts at the top of the posts array.
+            $sticky_posts = get_option('sticky_posts');
+            if ($page <= 1 && is_array($sticky_posts) && !empty($sticky_posts) && !$wp_query->query_vars['ignore_sticky_posts']) {
+                $num_posts = count($posts);
+                $sticky_offset = 0;
+                // Loop over posts and relocate stickies to the front.
+                for ($i = 0; $i < $num_posts; $i++) {
+                    if (in_array($posts[$i]->ID, $sticky_posts, true)) {
+                        $sticky_post = $posts[$i];
+                        // Remove sticky from current position.
+                        array_splice($posts, $i, 1);
+                        // Move to front, after other stickies.
+                        array_splice($posts, $sticky_offset, 0, [$sticky_post]);
+                        // Increment the sticky offset. The next sticky will be placed at this offset.
+                        $sticky_offset++;
+                        // Remove post from sticky posts array.
+                        $offset = array_search($sticky_post->ID, $sticky_posts, true);
+                        unset($sticky_posts[$offset]);
+                    }
+                }
+
+                // If any posts have been excluded specifically, Ignore those that are sticky.
+                if (!empty($sticky_posts) && !empty($q['post__not_in'])) {
+                    $sticky_posts = array_diff($sticky_posts, $q['post__not_in']);
+                }
+
+                // Fetch sticky posts that weren't in the query results.
+                if (!empty($sticky_posts)) {
+
+                    remove_filter('the_posts', [$this, 'the_posts'], 10);
+
+                    $stickies = get_posts([
+                        'post__in'    => $sticky_posts,
+                        'post_type'   => $post_type,
+                        'post_status' => 'publish',
+                        'nopaging'    => true
+                    ]);
+
+                    add_filter('the_posts', [$this, 'the_posts'], 10, 2);
+
+                    foreach ($stickies as $sticky_post) {
+                        array_splice($posts, $sticky_offset, 0, [$sticky_post]);
+                        $sticky_offset++;
+                    }
+                }
+            }
+        }
+
+        return $posts;
     }
 
 }
 
 require WPFP_PATH . 'inc/wp-featured-posts-setting.php';
-require WPFP_PATH . 'inc/wpml-functions.php';
+require WPFP_PATH . 'inc/wp-featured-posts-wpml.php';
 
 WPFP_Featured_Posts::instance();

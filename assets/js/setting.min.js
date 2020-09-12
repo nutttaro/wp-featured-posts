@@ -1,0 +1,1 @@
+!function(h){h(".wpfp-toggle-expand").on("click",function(s){s.preventDefault();var i=h(this).data("expand");h(i).length&&h(i).toggle(),h(this).hasClass("show")?(h(this).addClass("hide"),h(this).find(".hide").hide(),h(this).find(".show").show()):(h(this).addClass("show"),h(this).find(".hide").show(),h(this).find(".show").hide())})}(jQuery);
