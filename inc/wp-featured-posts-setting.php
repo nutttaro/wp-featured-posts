@@ -28,7 +28,6 @@ class WPFP_Featured_Posts_Setting
     public function admin_enqueue_scripts($hook)
     {
         if ($hook === 'toplevel_page_wp-featured-posts-settings-page') {
-            wp_enqueue_script('google-code-prettify', 'https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js', [], WPFP_VERSION, true);
             wp_enqueue_script('admin-featured-sorting-setting', WPFP_PLUGIN_URL . '/assets/js/setting.min.js', ['jquery'], WPFP_VERSION, true);
         }
     }
@@ -228,7 +227,7 @@ class WPFP_Featured_Posts_Setting
             </div>
             <div id="wpfp-code" class="code" style="display: none;">
                 <h5><?php _e('Example code for query featured posts', 'wp-featured-posts'); ?></h5>
-<pre class="prettyprint">
+<pre>
 $args = [
     'post_type'        => 'post',
     'post_status'      => 'publish',
