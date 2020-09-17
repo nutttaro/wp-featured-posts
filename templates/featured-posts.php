@@ -4,6 +4,7 @@
 
     <div class="tablenav top">
         <form action="post" id="form-featured-sorting" class="form-featured-sorting">
+            <?php if ($show_select_post): ?>
             <div class="alignleft actions bulkactions">
                 <label for="select-featured-sorting" class="screen-reader-text">Select <?php echo $post_type_title; ?></label>
                 <select name="post_id" id="select-featured-sorting">
@@ -20,6 +21,7 @@
                 </select>
                 <input type="submit" id="add-featured-sorting" class="button action button-primary" value="Add <?php echo $post_type_title; ?>">
             </div>
+            <?php endif; ?>
             <input type="hidden" name="count_featured_sorting" value="<?php echo count($featured_posts); ?>">
             <input type="hidden" name="post_type_title" value="<?php echo $post_type_title; ?>">
             <input type="hidden" name="post_type" value="<?php echo $post_type; ?>">

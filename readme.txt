@@ -1,7 +1,7 @@
 === WP Featured Posts ===
 Contributors: nutttaro
 Donate link: https://www.paypal.com/paypalme/nutttaro
-Tags: taxonomy, order
+Tags: featured-posts, featured-post, feature-posts, feature-post
 Requires at least: 4.7
 Tested up to: 5.5
 Requires PHP: 7.0
@@ -41,13 +41,17 @@ You can see example code in *Featured Posts* setting
 == Screenshots ==
 
 1. Screenshot of the menu page for Featured Posts Setting page.
-You can select taxonomy for enable order feature
 1. Drag and Drop for order posts. It easy!
 1. How to sticky posts work
 
 == Changelog ==
-= 1.0.0 =
-* Initial Release
+
+= 1.0.2 =
+* Add fillter title featured post
+* Add fillter show select featured post
 
 = 1.0.1 =
 * Fix bug setting options
+
+= 1.0.0 =
+* Initial Release

@@ -41,5 +41,13 @@ You can see example code in **Featured Posts** setting
 
 
 ## Changelog
+
+###### 1.0.2
+* Add fillter title featured post
+* Add fillter show select featured post
+
+###### 1.0.1
+* Fix bug setting options
+
 ###### 1.0.0
 * Initial Release

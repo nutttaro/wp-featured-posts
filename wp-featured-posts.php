@@ -3,7 +3,7 @@
  * Plugin Name:       WP Featured Posts
  * Plugin URI:        https://wordpress.org/plugins/wp-featured-posts/
  * Description:       Set featured posts, sortable and sticky custom post type. Compatible with WPML.
- * Version:           1.0.1
+ * Version:           1.0.2
  * Requires at least: 4.7
  * Requires PHP:      7.0
  * Author:            NuttTaro
@@ -18,7 +18,7 @@
 define('WPFP_PATH', plugin_dir_path(__FILE__));
 define('WPFP_BASENAME', plugin_basename(__FILE__));
 define('WPFP_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('WPFP_VERSION', '1.0.1');
+define('WPFP_VERSION', '1.0.2');
 
 /**
  * Class WPFP_Featured_Posts
@@ -156,10 +156,13 @@ class WPFP_Featured_Posts
             $get_post_type = self::get_post_type($post_type);
 
             $title = sprintf(__('Featured %s', 'wp-featured-posts'), $post_type);
+            $title = apply_filters("wpfp_title_featured_{$post_type}", $title);
             $post_type_title = $get_post_type[$post_type]->label;
             $featured_key = "{$post_type}_featured";
             $posts = self::get_posts($post_type, $featured_key);
             $featured_posts = self::get_featured_sorting($post_type, $featured_key);
+
+            $show_select_post = apply_filters("wpfp_show_select_featured_{$post_type}", true);
 
             require_once WPFP_PATH . 'templates/featured-posts.php';
         }
