@@ -3,7 +3,7 @@
  * Plugin Name:       WP Featured Posts
  * Plugin URI:        https://wordpress.org/plugins/wp-featured-posts/
  * Description:       Set featured posts, sortable and sticky custom post type. Compatible with WPML.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 4.7
  * Requires PHP:      7.0
  * Author:            NuttTaro
@@ -18,7 +18,7 @@
 define('WPFP_PATH', plugin_dir_path(__FILE__));
 define('WPFP_BASENAME', plugin_basename(__FILE__));
 define('WPFP_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('WPFP_VERSION', '1.0.0');
+define('WPFP_VERSION', '1.0.1');
 
 /**
  * Class WPFP_Featured_Posts
@@ -67,10 +67,12 @@ class WPFP_Featured_Posts
         $default = [
             'enable'           => 0,
             'post_types'       => [],
-            'sticky_post_type' => []
+            'sticky_post_type' => [],
         ];
 
         $this->options = get_option('wp_featured_posts_settings', $default);
+
+        self::set_default_options();
 
         if ($this->options['enable'] && $this->options['post_types']) {
             foreach ($this->options['post_types'] as $post_type) {
@@ -104,7 +106,7 @@ class WPFP_Featured_Posts
                 [
                     'site_url'  => site_url(),
                     'theme_url' => WPFP_PLUGIN_URL,
-                    'ajax_url'  => admin_url('admin-ajax.php')
+                    'ajax_url'  => admin_url('admin-ajax.php'),
                 ]
             );
 
@@ -182,13 +184,13 @@ class WPFP_Featured_Posts
                 'relation' => 'OR',
                 [
                     'key'     => $key,
-                    'compare' => 'NOT EXISTS'
+                    'compare' => 'NOT EXISTS',
                 ],
                 [
                     'key'   => $key,
-                    'value' => 0
-                ]
-            ]
+                    'value' => 0,
+                ],
+            ],
         ];
 
         return get_posts($args);
@@ -212,9 +214,9 @@ class WPFP_Featured_Posts
             'meta_query'       => [
                 [
                     'key'   => $key,
-                    'value' => '1'
-                ]
-            ]
+                    'value' => '1',
+                ],
+            ],
         ];
 
         return get_posts($args);
@@ -241,7 +243,7 @@ class WPFP_Featured_Posts
             // Update
             $args = [
                 'ID'         => $post_id,
-                'menu_order' => $featured_sorting
+                'menu_order' => $featured_sorting,
             ];
             $update = wp_update_post($args);
             update_post_meta($post_id, $data['featured_key'], 1);
@@ -261,7 +263,7 @@ class WPFP_Featured_Posts
 
                                 $args = [
                                     'ID'         => $id,
-                                    'menu_order' => $featured_sorting
+                                    'menu_order' => $featured_sorting,
                                 ];
                                 $update = wp_update_post($args);
 
@@ -317,7 +319,7 @@ class WPFP_Featured_Posts
         // Update
         $args = [
             'ID'         => $post_id,
-            'menu_order' => 0
+            'menu_order' => 0,
         ];
         $update = wp_update_post($args);
 
@@ -340,7 +342,7 @@ class WPFP_Featured_Posts
                             // Update
                             $args = [
                                 'ID'         => $id,
-                                'menu_order' => 0
+                                'menu_order' => 0,
                             ];
                             $update = wp_update_post($args);
 
@@ -388,7 +390,7 @@ class WPFP_Featured_Posts
                 update_post_meta($post_id, $data['featured_key'], '1');
                 $args = [
                     'ID'         => $post_id,
-                    'menu_order' => $key
+                    'menu_order' => $key,
                 ];
                 $update = wp_update_post($args);
 
@@ -402,7 +404,7 @@ class WPFP_Featured_Posts
                                     update_post_meta($id, $data['featured_key'], '1');
                                     $args = [
                                         'ID'         => $id,
-                                        'menu_order' => $key
+                                        'menu_order' => $key,
                                     ];
                                     $update = wp_update_post($args);
                                 }
@@ -511,12 +513,12 @@ class WPFP_Featured_Posts
                             'relation' => 'OR',
                             [
                                 'key'     => "{$sticky_post_type}_featured",
-                                'compare' => 'NOT EXISTS'
+                                'compare' => 'NOT EXISTS',
                             ],
                             [
                                 'key'     => "{$sticky_post_type}_featured",
-                                'compare' => 'EXISTS'
-                            ]
+                                'compare' => 'EXISTS',
+                            ],
                         ];
                         $wp_query->set('meta_query', $meta_query);
 
@@ -591,7 +593,7 @@ class WPFP_Featured_Posts
                         'post__in'    => $sticky_posts,
                         'post_type'   => $post_type,
                         'post_status' => 'publish',
-                        'nopaging'    => true
+                        'nopaging'    => true,
                     ]);
 
                     add_filter('the_posts', [$this, 'the_posts'], 10, 2);
@@ -605,6 +607,30 @@ class WPFP_Featured_Posts
         }
 
         return $posts;
+    }
+
+    /**
+     * Set default options
+     */
+    private function set_default_options()
+    {
+        $set_default_options = false;
+        if (!isset($this->options['enable'])) {
+            $this->options['enable'] = 0;
+            $set_default_options = true;
+        }
+        if (!isset($this->options['post_types'])) {
+            $this->options['post_types'] = [];
+            $set_default_options = true;
+        }
+        if (!isset($this->options['sticky_post_type'])) {
+            $this->options['sticky_post_type'] = [];
+            $set_default_options = true;
+        }
+
+        if ($set_default_options) {
+            update_option('wp_featured_posts_settings', $set_default_options);
+        }
     }
 
 }

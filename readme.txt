@@ -48,3 +48,6 @@ You can select taxonomy for enable order feature
 == Changelog ==
 = 1.0.0 =
 * Initial Release
+
+= 1.0.1 =
+* Fix bug setting options

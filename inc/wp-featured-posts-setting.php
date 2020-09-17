@@ -136,16 +136,20 @@ class WPFP_Featured_Posts_Setting
     {
         $sanitized_input = [];
         if (isset($input['enable'])) {
-            $sanitized_input['enable'] = sanitize_text_field($input['enable']);
+            $sanitized_input['enable'] = absint($input['enable']);
         } else {
             $sanitized_input['enable'] = 0;
         }
 
-        if (isset($input['post_types']))
+        $sanitized_input['post_types'] = [];
+        if (isset($input['post_types'])) {
             $sanitized_input['post_types'] = $input['post_types'];
+        }
 
-        if (isset($input['sticky_post_type']))
+        $sanitized_input['post_types'] = [];
+        if (isset($input['sticky_post_type'])) {
             $sanitized_input['sticky_post_type'] = $input['sticky_post_type'];
+        }
 
         return $sanitized_input;
     }
