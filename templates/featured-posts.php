@@ -2,9 +2,9 @@
     <h1 class="wp-heading-inline"><?php echo $title; ?></h1>
     <hr class="wp-header-end">
 
+    <?php if ($show_select_post): ?>
     <div class="tablenav top">
         <form action="post" id="form-featured-sorting" class="form-featured-sorting">
-            <?php if ($show_select_post): ?>
             <div class="alignleft actions bulkactions">
                 <label for="select-featured-sorting" class="screen-reader-text">Select <?php echo $post_type_title; ?></label>
                 <select name="post_id" id="select-featured-sorting">
@@ -21,7 +21,6 @@
                 </select>
                 <input type="submit" id="add-featured-sorting" class="button action button-primary" value="Add <?php echo $post_type_title; ?>">
             </div>
-            <?php endif; ?>
             <input type="hidden" name="count_featured_sorting" value="<?php echo count($featured_posts); ?>">
             <input type="hidden" name="post_type_title" value="<?php echo $post_type_title; ?>">
             <input type="hidden" name="post_type" value="<?php echo $post_type; ?>">
@@ -34,6 +33,7 @@
         </form>
         <br class="clear">
     </div>
+    <?php endif; ?>
 
     <?php
     if ($featured_posts):
@@ -48,14 +48,11 @@
                     <th scope="col" id="title" class="manage-column column-title column-primary" width="70%">
                         <span>Title</span>
                     </th>
-                    <?php if ($post_type == 'events'): ?>
-                        <th scope="col" id="event_date" class="manage-column column-title column-primary" width="20%">
-                            <span>Event Date</span>
-                        </th>
-                    <?php endif; ?>
+                    <?php if ($allow_delete): ?>
                     <th scope="col" id="action" class="manage-column column-action column-primary" width="20%">
                         <span>Action</span>
                     </th>
+                    <?php endif; ?>
                 </tr>
                 </thead>
                 <tbody id="the-list">
@@ -71,14 +68,11 @@
                                 <?php echo $post->post_title; ?>
                             </strong> <input type="hidden" name="post_id[]" value="<?php echo $post->ID; ?>">
                         </td>
-                        <?php if ($post_type == 'events'): ?>
-                            <th scope="col" id="event_date" class="manage-column column-title column-primary" width="20%">
-                                <span><?php echo get_field('event_date', $post->ID); ?></span>
-                            </th>
-                        <?php endif; ?>
+                        <?php if ($allow_delete): ?>
                         <td class="action column-action has-row-actions column-primary page-action" data-colname="Action" width="20%">
                             <a href="#" data-id="<?php echo $post->ID; ?>" data-lang="<?php echo defined('ICL_LANGUAGE_CODE') ? ICL_LANGUAGE_CODE : ''; ?>" data-nonce="<?php echo wp_create_nonce('delete-featured-sorting'); ?>">Delete</a>
                         </td>
+                        <?php endif; ?>
                     </tr>
 
                 <?php endforeach; ?>

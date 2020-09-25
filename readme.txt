@@ -46,6 +46,13 @@ You can see example code in *Featured Posts* setting
 
 == Changelog ==
 
+= 1.0.4 =
+* Fix bug setting options array
+
+= 1.0.3 =
+* Fix bug setting options
+* Add fillter show delete button
+
 = 1.0.2 =
 * Add fillter title featured post
 * Add fillter show select featured post

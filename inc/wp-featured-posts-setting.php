@@ -132,24 +132,16 @@ class WPFP_Featured_Posts_Setting
      *
      * @param array $input Contains custom settings which are passed when saving the form
      */
-    public function sanitize($input)
+    public function sanitize(array $input)
     {
-        $sanitized_input = [];
-        if (isset($input['enable'])) {
-            $sanitized_input['enable'] = absint($input['enable']);
-        } else {
-            $sanitized_input['enable'] = 0;
-        }
 
-        $sanitized_input['post_types'] = [];
-        if (isset($input['post_types'])) {
-            $sanitized_input['post_types'] = $input['post_types'];
-        }
+        $sanitized_input = [
+            'enable'           => 0,
+            'post_types'       => [],
+            'sticky_post_type' => [],
+        ];
 
-        $sanitized_input['post_types'] = [];
-        if (isset($input['sticky_post_type'])) {
-            $sanitized_input['sticky_post_type'] = $input['sticky_post_type'];
-        }
+        $sanitized_input = array_merge($sanitized_input, $input);
 
         return $sanitized_input;
     }
