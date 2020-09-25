@@ -1,6 +1,6 @@
 === WP Featured Posts ===
 Contributors: nutttaro
-Donate link: https://www.paypal.com/paypalme/nutttaro
+Donate link: https://www.buymeacoffee.com/nutttaro
 Tags: featured-posts, featured-post, feature-posts, feature-post
 Requires at least: 4.7
 Tested up to: 5.5
@@ -45,6 +45,9 @@ You can see example code in *Featured Posts* setting
 1. How to sticky posts work
 
 == Changelog ==
+
+= 1.0.5 =
+* Add action 'after_setup_theme' for feature column on custom post type
 
 = 1.0.4 =
 * Fix bug setting options array

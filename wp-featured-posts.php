@@ -3,7 +3,7 @@
  * Plugin Name:       WP Featured Posts
  * Plugin URI:        https://wordpress.org/plugins/wp-featured-posts/
  * Description:       Set featured posts, sortable and sticky custom post type. Compatible with WPML.
- * Version:           1.0.4
+ * Version:           1.0.5
  * Requires at least: 4.7
  * Requires PHP:      7.0
  * Author:            NuttTaro
@@ -18,7 +18,7 @@
 define('WPFP_PATH', plugin_dir_path(__FILE__));
 define('WPFP_BASENAME', plugin_basename(__FILE__));
 define('WPFP_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('WPFP_VERSION', '1.0.4');
+define('WPFP_VERSION', '1.0.5');
 
 /**
  * Class WPFP_Featured_Posts
@@ -74,13 +74,7 @@ class WPFP_Featured_Posts
 
         self::set_default_options();
 
-        if ($this->options['enable'] && $this->options['post_types']) {
-            foreach ($this->options['post_types'] as $post_type) {
-                add_filter("manage_{$post_type}_posts_columns", [$this, 'set_custom_featured_columns'], 5);
-                add_action("manage_{$post_type}_posts_custom_column", [$this, 'custom_column'], 10, 2);
-            }
-        }
-
+        add_action('after_setup_theme', [$this, 'after_setup_theme']);
     }
 
     /**
@@ -110,6 +104,22 @@ class WPFP_Featured_Posts
                 ]
             );
 
+        }
+    }
+
+    /**
+     * Add column to post type after setup theme
+     */
+    public function after_setup_theme()
+    {
+        if ($this->options['enable'] && $this->options['post_types']) {
+            foreach ($this->options['post_types'] as $post_type) {
+                $allow_featured_column = apply_filters("wpfp_add_featured_column_{$post_type}", true);
+                if ($allow_featured_column) {
+                    add_filter("manage_{$post_type}_posts_columns", [$this, 'set_custom_featured_columns'], 5);
+                    add_action("manage_{$post_type}_posts_custom_column", [$this, 'custom_column'], 10, 2);
+                }
+            }
         }
     }
 
