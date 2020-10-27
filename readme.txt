@@ -8,7 +8,7 @@ Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Set featured posts, sortable and sticky custom post type. Compatible with WPML.
+WP Featured Posts is a plugin choose featured posts, sortable and sticky custom post type and compatible with WPML.
 
 == Description ==
 
