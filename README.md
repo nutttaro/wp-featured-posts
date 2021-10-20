@@ -42,6 +42,9 @@ You can see example code in **Featured Posts** setting
 
 ## Changelog
 
+###### 1.0.6
+* Tested up to WordPress 5.8.1
+
 ###### 1.0.5
 * Add action 'after_setup_theme' for feature column on custom post type
 

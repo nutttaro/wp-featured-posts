@@ -3,7 +3,7 @@ Contributors: nutttaro
 Donate link: https://www.buymeacoffee.com/nutttaro
 Tags: featured-posts, featured-post, feature-posts, feature-post
 Requires at least: 4.7
-Tested up to: 5.6
+Tested up to: 5.8.1
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -45,6 +45,9 @@ You can see example code in *Featured Posts* setting
 1. How to sticky posts work
 
 == Changelog ==
+
+= 1.0.6 =
+* Tested up to WordPress 5.8.1
 
 = 1.0.5 =
 * Add action 'after_setup_theme' for feature column on custom post type
