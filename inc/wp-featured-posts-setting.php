@@ -74,6 +74,8 @@ class WPFP_Featured_Posts_Setting
                 ?>
             </form>
         </div>
+		<hr>
+		<script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script><script type='text/javascript'>kofiwidget2.init('Tip Me on Ko-fi', '#29abe0', 'J3J6HM43W');kofiwidget2.draw();</script>
         <?php
     }
 
@@ -123,13 +125,6 @@ class WPFP_Featured_Posts_Setting
             'wp_featured_sticky_posts_settings_section', // ID
             '', // Title
             [$this, 'wp_featured_sticky_posts_settings_section'], // Callback
-            'wp-featured-posts-settings-page' // Page
-        );
-
-        add_settings_section(
-            'wp_featured_donate_settings_section', // ID
-            '', // Title
-            [$this, 'wp_featured_donate_settings_section'], // Callback
             'wp-featured-posts-settings-page' // Page
         );
     }
@@ -248,15 +243,6 @@ $posts = get_posts($args);
             </div>
         </div>
 
-        <?php
-    }
-
-    function wp_featured_donate_settings_section()
-    {
-        ?>
-        <div class="wpfp-donate" style="position: fixed;right: 1rem;bottom: 1rem;z-index: 20;">
-            <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="nutttaro" data-color="#FFDD00" data-emoji=""  data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000" data-font-color="#000" data-coffee-color="#fff" ></script>
-        </div>
         <?php
     }
 

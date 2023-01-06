@@ -4,7 +4,7 @@
 * Donate link: https://www.paypal.com/paypalme/nutttaro
 * Tags: taxonomy, order
 * Requires at least: 4.7
-* Tested up to: 5.6
+* Tested up to: 6.1.1
 * Requires PHP: 7.0
 * License: GPLv2 or later
 * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -41,6 +41,10 @@ You can see example code in **Featured Posts** setting
 
 
 ## Changelog
+
+##### 1.0.7
+* Tested up to WordPress 6.1.1
+* Add Tip me on Ko-fi
 
 ###### 1.0.6
 * Tested up to WordPress 5.8.1
