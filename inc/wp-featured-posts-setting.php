@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
 /**
  * Class WPFP_Featured_Posts_Setting
  */
@@ -74,8 +78,6 @@ class WPFP_Featured_Posts_Setting
                 ?>
             </form>
         </div>
-		<hr>
-		<a href='https://ko-fi.com/J3J6HM43W' target='_blank'><img height='36' style='border:0px;height:36px;' src='<?php echo WPFP_PLUGIN_URL; ?>assets/images/kofi1.webp' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
         <?php
     }
 

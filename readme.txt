@@ -3,7 +3,8 @@ Contributors: nutttaro
 Donate link: https://www.buymeacoffee.com/nutttaro
 Tags: featured-posts, featured-post, feature-posts, feature-post
 Requires at least: 4.7
-Tested up to: 6.5
+Tested up to: 6.9
+Stable tag: 1.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -45,6 +46,14 @@ You can see example code in *Featured Posts* setting
 1. How to sticky posts work
 
 == Changelog ==
+
+= 1.1.0 =
+* Security: Added ABSPATH checks to prevent direct file access
+* Security: Improved output escaping in template files
+* Enhancement: Added translator comments for better internationalization support
+* Enhancement: Fixed wp_send_json_* function usage (removed incorrect echo statements)
+* Enhancement: Modernized code to comply with WordPress coding standards
+* Compatibility: Tested up to WordPress 6.9
 
 = 1.0.7 =
 * Tested up to WordPress 6.1.1

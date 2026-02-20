@@ -3,10 +3,10 @@
  * Plugin Name:       WP Featured Posts
  * Plugin URI:        https://wordpress.org/plugins/wp-featured-posts/
  * Description:       Set featured posts, sortable and sticky custom post type. Compatible with WPML.
- * Version:           1.0.7
+ * Version:           1.1.0
  * Requires at least: 4.7
  * Requires PHP:      7.4
- * Tested up to:      6.5
+ * Tested up to:      6.9
  * Author:            NuttTaro
  * Author URI:        https://nutttaro.com
  * License:           GPL v2 or later
@@ -15,11 +15,15 @@
  * Domain Path:       /languages
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
 // Define constants.
 define('WPFP_PATH', plugin_dir_path(__FILE__));
 define('WPFP_BASENAME', plugin_basename(__FILE__));
 define('WPFP_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('WPFP_VERSION', '1.0.7');
+define('WPFP_VERSION', '1.1.0');
 
 /**
  * Class WPFP_Featured_Posts
@@ -76,6 +80,8 @@ class WPFP_Featured_Posts
         self::set_default_options();
 
         add_action('after_setup_theme', [$this, 'after_setup_theme']);
+
+		add_filter('plugin_action_links_' . WPFP_BASENAME, [$this, 'add_plugin_donate_link']);
     }
 
     /**
@@ -140,7 +146,9 @@ class WPFP_Featured_Posts
 
                 add_submenu_page(
                     $parent_slug,
+                    /* translators: %s: Post type label */
                     sprintf(__('Featured %s', 'wp-featured-posts'), $get_post_type[$post_type]->label),
+                    /* translators: %s: Post type label */
                     sprintf(__('Featured %s', 'wp-featured-posts'), $get_post_type[$post_type]->label),
                     'manage_options',
                     $menu_slug,
@@ -166,6 +174,7 @@ class WPFP_Featured_Posts
 
             $get_post_type = self::get_post_type($post_type);
 
+            /* translators: %s: Post type name */
             $title = sprintf(__('Featured %s', 'wp-featured-posts'), $post_type);
             $title = apply_filters("wpfp_title_featured_{$post_type}", $title);
             $post_type_title = $get_post_type[$post_type]->label;
@@ -295,14 +304,14 @@ class WPFP_Featured_Posts
 
             if ($update) {
                 $data['message'] = 'Added Featured ' . $data['post_type_title'];
-                echo wp_send_json_success($data);
+                wp_send_json_success($data);
             } else {
                 $data['message'] = '<strong>Error</strong> Cannot add featured ' . $data['post_type'];
-                echo wp_send_json_error($data);
+                wp_send_json_error($data);
             }
         } else {
             $data['message'] = '<strong>Error</strong> Not found ' . $data['post_type'];
-            echo wp_send_json_error($data);
+            wp_send_json_error($data);
         }
 
         wp_die();
@@ -374,10 +383,10 @@ class WPFP_Featured_Posts
 
         if ($delete) {
             $data['message'] = 'Deleted Featured ' . $data['post_type_title'];
-            echo wp_send_json_success($data);
+            wp_send_json_success($data);
         } else {
             $data['message'] = '<strong>Error</strong> Cannot delete featured ' . $data['post_type'];
-            echo wp_send_json_error($data);
+            wp_send_json_error($data);
         }
 
         wp_die();
@@ -431,7 +440,7 @@ class WPFP_Featured_Posts
             }
 
             $data['message'] = 'Ordered Featured ' . $data['post_type_title'];
-            echo wp_send_json_success($data);
+            wp_send_json_success($data);
 
         }
 
@@ -480,9 +489,9 @@ class WPFP_Featured_Posts
                 }
 
                 if ($featured) {
-                    echo __('Yes', 'wp-featured-posts');
+                    echo esc_html__('Yes', 'wp-featured-posts');
                 } else {
-                    echo __('No', 'wp-featured-posts');
+                    echo esc_html__('No', 'wp-featured-posts');
                 }
 
                 break;
@@ -646,6 +655,19 @@ class WPFP_Featured_Posts
         if ($set_default_options) {
             update_option('wp_featured_posts_settings', $this->options);
         }
+    }
+
+
+    /**
+     * Add donate link
+     *
+     * @param $links
+     * @return mixed
+     */
+    public function add_plugin_donate_link($links)
+    {
+        $links[] = '<a href="https://www.buymeacoffee.com/nutttaro" target="_blank">' . __('Donate', 'video-player-for-wpbakery') . '</a>';
+        return $links;
     }
 
 }
