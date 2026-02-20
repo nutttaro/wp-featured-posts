@@ -32,6 +32,7 @@ class WPFP_Featured_Posts_Setting
     public function admin_enqueue_scripts($hook)
     {
         if ($hook === 'toplevel_page_wp-featured-posts-settings-page') {
+            wp_enqueue_media();
             wp_enqueue_script('admin-featured-sorting-setting', WPFP_PLUGIN_URL . '/assets/js/setting.min.js', ['jquery'], WPFP_VERSION, true);
         }
     }
@@ -124,6 +125,37 @@ class WPFP_Featured_Posts_Setting
         );
 
         add_settings_section(
+            'wp_featured_pin_icon_settings_section', // ID
+            __('Pin Icon Settings', 'wp-featured-posts'), // Title
+            [$this, 'wp_featured_pin_icon_settings_section'], // Callback
+            'wp-featured-posts-settings-page' // Page
+        );
+
+        add_settings_field(
+            'wp-featured-posts-pin-enable', // ID
+            __('Enable Pin Icon', 'wp-featured-posts'), // Title
+            [$this, 'pin_enable_field'], // Callback
+            'wp-featured-posts-settings-page', // Page
+            'wp_featured_pin_icon_settings_section'
+        );
+
+        add_settings_field(
+            'wp-featured-posts-pin-size', // ID
+            __('Pin Icon Size', 'wp-featured-posts'), // Title
+            [$this, 'pin_size_field'], // Callback
+            'wp-featured-posts-settings-page', // Page
+            'wp_featured_pin_icon_settings_section'
+        );
+
+        add_settings_field(
+            'wp-featured-posts-pin-image', // ID
+            __('Custom Pin Image', 'wp-featured-posts'), // Title
+            [$this, 'pin_image_field'], // Callback
+            'wp-featured-posts-settings-page', // Page
+            'wp_featured_pin_icon_settings_section'
+        );
+
+        add_settings_section(
             'wp_featured_sticky_posts_settings_section', // ID
             '', // Title
             [$this, 'wp_featured_sticky_posts_settings_section'], // Callback
@@ -144,9 +176,28 @@ class WPFP_Featured_Posts_Setting
             'enable'           => 0,
             'post_types'       => [],
             'sticky_post_type' => [],
+            'pin_enable'       => 0,
+            'pin_size'         => 16,
+            'pin_image'        => '',
         ];
 
         $sanitized_input = array_merge($sanitized_input, $input);
+
+        // Sanitize pin size
+        if (isset($sanitized_input['pin_size'])) {
+            $sanitized_input['pin_size'] = absint($sanitized_input['pin_size']);
+            if ($sanitized_input['pin_size'] < 10) {
+                $sanitized_input['pin_size'] = 10;
+            }
+            if ($sanitized_input['pin_size'] > 50) {
+                $sanitized_input['pin_size'] = 50;
+            }
+        }
+
+        // Sanitize pin image URL
+        if (isset($sanitized_input['pin_image'])) {
+            $sanitized_input['pin_image'] = esc_url_raw($sanitized_input['pin_image']);
+        }
 
         return $sanitized_input;
     }
@@ -211,6 +262,39 @@ class WPFP_Featured_Posts_Setting
         }
     }
 
+
+    public function wp_featured_pin_icon_settings_section()
+    {
+        echo '<p>' . __('Configure the pin icon that appears next to featured post titles.', 'wp-featured-posts') . '</p>';
+    }
+
+    public function pin_enable_field()
+    {
+        $pin_enable = isset($this->options['pin_enable']) ? $this->options['pin_enable'] : 0;
+        echo '<label for="wp-featured-posts-pin-enable"><input type="checkbox" id="wp-featured-posts-pin-enable" name="wp_featured_posts_settings[pin_enable]" value="1" ' . checked($pin_enable, 1, false) . ' > ' . __('Show pin icon next to featured post titles', 'wp-featured-posts') . '</label>';
+    }
+
+    public function pin_size_field()
+    {
+        $pin_size = isset($this->options['pin_size']) ? $this->options['pin_size'] : 16;
+        echo '<input type="number" id="wp-featured-posts-pin-size" name="wp_featured_posts_settings[pin_size]" value="' . esc_attr($pin_size) . '" min="10" max="50" step="1" style="width: 80px;"> <span class="description">' . __('px (10-50)', 'wp-featured-posts') . '</span>';
+    }
+
+    public function pin_image_field()
+    {
+        $pin_image = isset($this->options['pin_image']) ? $this->options['pin_image'] : '';
+        ?>
+        <div class="wpfp-pin-image-upload">
+            <input type="hidden" id="wp-featured-posts-pin-image" name="wp_featured_posts_settings[pin_image]" value="<?php echo esc_attr($pin_image); ?>">
+            <button type="button" class="button wpfp-upload-pin-image"><?php _e('Upload Image', 'wp-featured-posts'); ?></button>
+            <button type="button" class="button wpfp-remove-pin-image" style="<?php echo empty($pin_image) ? 'display:none;' : ''; ?>"><?php _e('Remove Image', 'wp-featured-posts'); ?></button>
+            <div class="wpfp-pin-preview" style="margin-top: 10px;<?php echo empty($pin_image) ? 'display:none;' : ''; ?>">
+                <img src="<?php echo esc_url($pin_image); ?>" style="max-width: 100px; height: auto;">
+            </div>
+            <p class="description"><?php _e('Leave empty to use default pin icon (📌). Recommended size: 32x32px or larger.', 'wp-featured-posts'); ?></p>
+        </div>
+        <?php
+    }
 
     public function wp_featured_sticky_posts_settings_section()
     {

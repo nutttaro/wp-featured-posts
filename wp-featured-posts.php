@@ -3,7 +3,7 @@
  * Plugin Name:       WP Featured Posts
  * Plugin URI:        https://wordpress.org/plugins/wp-featured-posts/
  * Description:       Set featured posts, sortable and sticky custom post type. Compatible with WPML.
- * Version:           1.1.0
+ * Version:           1.1.1
  * Requires at least: 4.7
  * Requires PHP:      7.4
  * Tested up to:      6.9
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define('WPFP_PATH', plugin_dir_path(__FILE__));
 define('WPFP_BASENAME', plugin_basename(__FILE__));
 define('WPFP_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('WPFP_VERSION', '1.1.0');
+define('WPFP_VERSION', '1.1.1');
 
 /**
  * Class WPFP_Featured_Posts
@@ -73,6 +73,9 @@ class WPFP_Featured_Posts
             'enable'           => 0,
             'post_types'       => [],
             'sticky_post_type' => [],
+            'pin_enable'       => 0,
+            'pin_size'         => 16,
+            'pin_image'        => '',
         ];
 
         $this->options = get_option('wp_featured_posts_settings', $default);
@@ -82,6 +85,12 @@ class WPFP_Featured_Posts
         add_action('after_setup_theme', [$this, 'after_setup_theme']);
 
 		add_filter('plugin_action_links_' . WPFP_BASENAME, [$this, 'add_plugin_donate_link']);
+
+		// Pin icon functionality
+		if ($this->options['enable'] && $this->options['pin_enable']) {
+			add_filter('the_title', [$this, 'add_pin_icon_to_title'], 10, 2);
+			add_action('wp_head', [$this, 'add_pin_icon_styles']);
+		}
     }
 
     /**
@@ -254,7 +263,7 @@ class WPFP_Featured_Posts
 
         check_ajax_referer('save-featured-sorting');
 
-        $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
         $data['_redirect'] = $data['_wp_http_referer'];
 
@@ -326,7 +335,7 @@ class WPFP_Featured_Posts
 
         check_ajax_referer('delete-featured-sorting');
 
-        $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
         if ($data['post_type'] == 'post') {
             $_redirect = 'edit.php?page=featured-' . $data['post_type'] . '-page';
@@ -401,7 +410,7 @@ class WPFP_Featured_Posts
 
         check_ajax_referer('order-featured-sorting');
 
-        $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
         $post_ids = $data['post_id'];
 
@@ -523,7 +532,10 @@ class WPFP_Featured_Posts
 
                 foreach ($this->options['sticky_post_type'] as $sticky_post_type) {
 
-                    if ($wp_query->is_home() && $sticky_post_type == 'post' || $wp_query->get('post_type') == $sticky_post_type) {
+                    $is_post_archive = ($wp_query->is_home() || $wp_query->is_category() || $wp_query->is_tag() || $wp_query->is_author() || $wp_query->is_date()) && $sticky_post_type == 'post';
+                    $is_custom_post_type = $wp_query->get('post_type') == $sticky_post_type;
+
+                    if ($is_post_archive || $is_custom_post_type) {
 
                         // Get original meta query
                         $meta_query = $wp_query->get('meta_query');
@@ -567,6 +579,12 @@ class WPFP_Featured_Posts
     public function the_posts($posts, $wp_query)
     {
         $post_type = $wp_query->query_vars['post_type'];
+
+        // Handle standard post archives (category, tag, etc.) where post_type is empty
+        if (empty($post_type) && ($wp_query->is_home() || $wp_query->is_category() || $wp_query->is_tag() || $wp_query->is_author() || $wp_query->is_date())) {
+            $post_type = 'post';
+        }
+
         if (!is_admin() && $wp_query->is_main_query() && $this->options['enable'] && in_array($post_type, $this->options['sticky_post_type'])) {
 
             $page = 1;
@@ -604,8 +622,8 @@ class WPFP_Featured_Posts
                 }
 
                 // If any posts have been excluded specifically, Ignore those that are sticky.
-                if (!empty($sticky_posts) && !empty($q['post__not_in'])) {
-                    $sticky_posts = array_diff($sticky_posts, $q['post__not_in']);
+                if (!empty($sticky_posts) && !empty($wp_query->query_vars['post__not_in'])) {
+                    $sticky_posts = array_diff($sticky_posts, $wp_query->query_vars['post__not_in']);
                 }
 
                 // Fetch sticky posts that weren't in the query results.
@@ -651,12 +669,117 @@ class WPFP_Featured_Posts
             $this->options['sticky_post_type'] = [];
             $set_default_options = true;
         }
+        if (!isset($this->options['pin_enable'])) {
+            $this->options['pin_enable'] = 0;
+            $set_default_options = true;
+        }
+        if (!isset($this->options['pin_size'])) {
+            $this->options['pin_size'] = 16;
+            $set_default_options = true;
+        }
+        if (!isset($this->options['pin_image'])) {
+            $this->options['pin_image'] = '';
+            $set_default_options = true;
+        }
 
         if ($set_default_options) {
             update_option('wp_featured_posts_settings', $this->options);
         }
     }
 
+    /**
+     * Add pin icon to featured post titles
+     *
+     * @param string $title
+     * @param int $post_id
+     * @return string
+     */
+    public function add_pin_icon_to_title($title, $post_id)
+    {
+        // Only add pin icon on frontend, not in admin or feeds
+        if (is_admin() || is_feed()) {
+            return $title;
+        }
+
+        // Get post type
+        $post_type = get_post_type($post_id);
+
+        // Check if this post type has pin icon enabled
+        if (!in_array($post_type, $this->options['post_types'])) {
+            return $title;
+        }
+
+        // Check if this post is featured
+        $featured_key = "{$post_type}_featured";
+        $is_featured = get_post_meta($post_id, $featured_key, true);
+
+        if ($is_featured != '1') {
+            return $title;
+        }
+
+        // Build pin icon HTML
+        $pin_html = $this->get_pin_icon_html();
+
+        // Allow filtering of pin position (before or after title)
+        $position = apply_filters('wpfp_pin_icon_position', 'before', $post_id);
+
+        if ($position === 'after') {
+            return $title . ' ' . $pin_html;
+        }
+
+        return $pin_html . ' ' . $title;
+    }
+
+    /**
+     * Get pin icon HTML
+     *
+     * @return string
+     */
+    private function get_pin_icon_html()
+    {
+        $pin_size = isset($this->options['pin_size']) ? absint($this->options['pin_size']) : 16;
+        $pin_image = isset($this->options['pin_image']) ? $this->options['pin_image'] : '';
+
+        if (!empty($pin_image)) {
+            // Use custom image
+            return sprintf(
+                '<span class="wpfp-pin-icon wpfp-pin-custom"><img src="%s" alt="%s" width="%d" height="%d"></span>',
+                esc_url($pin_image),
+                esc_attr__('Featured', 'wp-featured-posts'),
+                $pin_size,
+                $pin_size
+            );
+        }
+
+        // Use default emoji pin
+        return sprintf(
+            '<span class="wpfp-pin-icon wpfp-pin-default" style="font-size:%dpx;">📌</span>',
+            $pin_size
+        );
+    }
+
+    /**
+     * Add pin icon styles to frontend
+     */
+    public function add_pin_icon_styles()
+    {
+        ?>
+        <style type="text/css">
+            .wpfp-pin-icon {
+                display: inline-block;
+                vertical-align: middle;
+                line-height: 1;
+            }
+            .wpfp-pin-icon.wpfp-pin-custom img {
+                display: inline-block;
+                vertical-align: middle;
+            }
+            .wpfp-pin-icon.wpfp-pin-default {
+                margin-right: 4px;
+            }
+        </style>
+        <?php
+    }
 
     /**
      * Add donate link
@@ -666,7 +789,7 @@ class WPFP_Featured_Posts
      */
     public function add_plugin_donate_link($links)
     {
-        $links[] = '<a href="https://www.buymeacoffee.com/nutttaro" target="_blank">' . __('Donate', 'video-player-for-wpbakery') . '</a>';
+        $links[] = '<a href="https://www.buymeacoffee.com/nutttaro" target="_blank">' . __('Donate', 'wp-featured-posts') . '</a>';
         return $links;
     }
 

@@ -4,7 +4,7 @@ Donate link: https://www.buymeacoffee.com/nutttaro
 Tags: featured-posts, featured-post, feature-posts, feature-post
 Requires at least: 4.7
 Tested up to: 6.9
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -47,12 +47,25 @@ You can see example code in *Featured Posts* setting
 
 == Changelog ==
 
+= 1.1.1 =
+* Fix: Resolved media uploader not working for custom pin image upload
+* Fix: Improved JavaScript initialization with proper DOM ready handling
+* Fix: Enhanced event delegation for better compatibility
+
 = 1.1.0 =
 * Security: Added ABSPATH checks to prevent direct file access
 * Security: Improved output escaping in template files
 * Enhancement: Added translator comments for better internationalization support
 * Enhancement: Fixed wp_send_json_* function usage (removed incorrect echo statements)
 * Enhancement: Modernized code to comply with WordPress coding standards
+* Enhancement: Fixed deprecated FILTER_SANITIZE_STRING for PHP 8.1+ compatibility
+* Enhancement: Fixed undefined variable $q in sticky posts logic
+* Feature: Added pin icon display for featured posts with customizable settings
+* Feature: Pin icon can be enabled/disabled per configuration
+* Feature: Adjustable pin icon size (10-50px)
+* Feature: Support for custom pin image upload
+* Feature: Pin icon position can be filtered (before/after title)
+* Fix: Featured posts now work correctly on category, tag, author, and date archive pages
 * Compatibility: Tested up to WordPress 6.9
 
 = 1.0.7 =
