@@ -70,6 +70,7 @@ class WPFP_Featured_Posts_Setting
         ?>
         <div class="wrap">
             <h1><?php _e('Featured Posts Setting', 'wp-featured-posts'); ?></h1>
+            <?php settings_errors(); ?>
             <form method="post" action="options.php">
                 <?php
                 // This prints out all hidden setting fields

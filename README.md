@@ -42,6 +42,14 @@ You can see example code in **Featured Posts** setting
 
 ## Changelog
 
+##### 1.2.0
+* Feature: Added `[featured_posts]` shortcode with `post_type` and `limit` attributes
+* Feature: Added Gutenberg block editor sidebar panel for toggling featured status
+* Feature: Registered post meta with REST API support (`show_in_rest`)
+* Feature: Added build toolchain with `@wordpress/scripts` for editor assets
+* Fix: Featured column now works for all post types (was hardcoded to testimonials only)
+* Fix: Fixed setting.js syntax error (missing closing bracket for document.ready)
+
 ##### 1.1.0 
 * Security: Added ABSPATH checks to prevent direct file access
 * Security: Improved output escaping in template files
