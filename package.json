@@ -1,0 +1,18 @@
+{
+	"name": "wp-featured-posts",
+	"version": "1.1.1",
+	"description": "WP Featured Posts plugin build tooling",
+	"scripts": {
+		"build": "wp-scripts build src/editor/index.js --output-path=build/editor",
+		"start": "wp-scripts start src/editor/index.js --output-path=build/editor",
+		"minify:js": "uglifyjs assets/js/main.js -o assets/js/main.min.js -c -m && uglifyjs assets/js/setting.js -o assets/js/setting.min.js -c -m",
+		"minify:css": "cleancss -o assets/css/style.min.css assets/css/style.css",
+		"minify": "npm run minify:js && npm run minify:css",
+		"build:all": "npm run build && npm run minify"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^30.0.0",
+		"clean-css-cli": "^5.6.0",
+		"uglify-js": "^3.17.0"
+	}
+}

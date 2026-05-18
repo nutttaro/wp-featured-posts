@@ -91,6 +91,10 @@ class WPFP_Featured_Posts
 			add_filter('the_title', [$this, 'add_pin_icon_to_title'], 10, 2);
 			add_action('wp_head', [$this, 'add_pin_icon_styles']);
 		}
+
+		add_shortcode('featured_posts', [$this, 'shortcode_featured_posts']);
+		add_action('init', [$this, 'register_meta_fields']);
+		add_action('enqueue_block_editor_assets', [$this, 'enqueue_block_editor_assets']);
     }
 
     /**
@@ -491,11 +495,9 @@ class WPFP_Featured_Posts
         switch ($column) {
 
             case 'featured' :
-                $featured = 0;
                 $post_type = get_post_type($post_id);
-                if ($post_type == 'testimonials') {
-                    $featured = get_post_meta($post_id, "testimonial_featured", true);
-                }
+                $featured_key = "{$post_type}_featured";
+                $featured = get_post_meta($post_id, $featured_key, true);
 
                 if ($featured) {
                     echo esc_html__('Yes', 'wp-featured-posts');
@@ -779,6 +781,112 @@ class WPFP_Featured_Posts
             }
         </style>
         <?php
+    }
+
+    /**
+     * Register post meta for REST API and block editor support
+     */
+    public function register_meta_fields()
+    {
+        if (!$this->options['enable'] || empty($this->options['post_types'])) {
+            return;
+        }
+
+        foreach ($this->options['post_types'] as $post_type) {
+            register_post_meta($post_type, "{$post_type}_featured", [
+                'show_in_rest'  => true,
+                'single'        => true,
+                'type'          => 'string',
+                'auth_callback' => function () {
+                    return current_user_can('edit_posts');
+                },
+            ]);
+        }
+    }
+
+    /**
+     * Enqueue block editor sidebar script
+     */
+    public function enqueue_block_editor_assets()
+    {
+        if (!$this->options['enable'] || empty($this->options['post_types'])) {
+            return;
+        }
+
+        $current_screen = get_current_screen();
+        if (!$current_screen || !in_array($current_screen->post_type, $this->options['post_types'])) {
+            return;
+        }
+
+        $asset_file = WPFP_PATH . 'build/editor/index.asset.php';
+        if (!file_exists($asset_file)) {
+            return;
+        }
+        $asset = require $asset_file;
+
+        wp_enqueue_script(
+            'wpfp-editor-sidebar',
+            WPFP_PLUGIN_URL . 'build/editor/index.js',
+            $asset['dependencies'],
+            $asset['version'],
+            true
+        );
+
+        wp_localize_script('wpfp-editor-sidebar', 'wpfpEditor', [
+            'postTypes' => $this->options['post_types'],
+        ]);
+    }
+
+    /**
+     * Shortcode: [featured_posts]
+     *
+     * Attributes:
+     *   post_type - default "post"
+     *   limit     - default 5
+     *   orderby   - default "menu_order" (ASC), then date (DESC)
+     *
+     * @param array $atts
+     * @return string
+     */
+    public function shortcode_featured_posts($atts)
+    {
+        $atts = shortcode_atts([
+            'post_type' => 'post',
+            'limit'     => 5,
+        ], $atts, 'featured_posts');
+
+        $post_type = sanitize_key($atts['post_type']);
+        $limit = absint($atts['limit']);
+        $featured_key = "{$post_type}_featured";
+
+        $posts = get_posts([
+            'post_type'      => $post_type,
+            'post_status'    => 'publish',
+            'posts_per_page' => $limit,
+            'orderby'        => ['menu_order' => 'ASC', 'date' => 'DESC'],
+            'meta_query'     => [
+                [
+                    'key'   => $featured_key,
+                    'value' => '1',
+                ],
+            ],
+        ]);
+
+        if (empty($posts)) {
+            return '';
+        }
+
+        $output = '<ul class="wpfp-featured-posts">';
+        foreach ($posts as $post) {
+            $output .= sprintf(
+                '<li><a href="%s">%s</a></li>',
+                esc_url(get_permalink($post)),
+                esc_html(get_the_title($post))
+            );
+        }
+        $output .= '</ul>';
+
+        return $output;
     }
 
     /**

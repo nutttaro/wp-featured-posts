@@ -28,6 +28,9 @@ Thumbs.db
 # ignore node/grunt dependency directories
 node_modules/
 
+# compiled editor assets
+build/
+
 # Optional npm cache directory
 .npm
 
