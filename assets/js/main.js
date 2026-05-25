@@ -1,6 +1,6 @@
 (function($) {
 
-    $('#form-featured-sorting').submit(function() {
+    $('#form-featured-sorting').on('submit', function() {
 
         var $form = $(this),
             $btnSubmit = $form.find('[type="submit"]'),
@@ -105,14 +105,13 @@
                     $(this).find('.column-order span').text(++index);
                 });
 
-                $('#order-featured-sorting').submit();
+                $('#order-featured-sorting').trigger('submit');
 
             }
         });
-        $sortableElement.disableSelection();
     }
 
-    $('#order-featured-sorting').submit(function() {
+    $('#order-featured-sorting').on('submit', function() {
 
         var $form = $(this),
             formData = $form.serialize();

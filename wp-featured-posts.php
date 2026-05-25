@@ -3,10 +3,10 @@
  * Plugin Name:       WP Featured Posts
  * Plugin URI:        https://wordpress.org/plugins/wp-featured-posts/
  * Description:       Set featured posts, sortable and sticky custom post type. Compatible with WPML.
- * Version:           1.2.0
+ * Version:           1.2.1
  * Requires at least: 4.7
  * Requires PHP:      7.4
- * Tested up to:      6.9
+ * Tested up to:      7.0
  * Author:            NuttTaro
  * Author URI:        https://nutttaro.com
  * License:           GPL v2 or later
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define('WPFP_PATH', plugin_dir_path(__FILE__));
 define('WPFP_BASENAME', plugin_basename(__FILE__));
 define('WPFP_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('WPFP_VERSION', '1.2.0');
+define('WPFP_VERSION', '1.2.1');
 
 /**
  * Class WPFP_Featured_Posts
@@ -89,12 +89,15 @@ class WPFP_Featured_Posts
 		// Pin icon functionality
 		if ($this->options['enable'] && $this->options['pin_enable']) {
 			add_filter('the_title', [$this, 'add_pin_icon_to_title'], 10, 2);
-			add_action('wp_head', [$this, 'add_pin_icon_styles']);
+			add_action('wp_enqueue_scripts', [$this, 'enqueue_pin_icon_styles']);
 		}
 
 		add_shortcode('featured_posts', [$this, 'shortcode_featured_posts']);
 		add_action('init', [$this, 'register_meta_fields']);
 		add_action('enqueue_block_editor_assets', [$this, 'enqueue_block_editor_assets']);
+
+		add_action('updated_post_meta', [$this, 'sync_featured_sticky'], 10, 4);
+		add_action('added_post_meta', [$this, 'sync_featured_sticky'], 10, 4);
     }
 
     /**
@@ -424,10 +427,11 @@ class WPFP_Featured_Posts
 
             foreach ($post_ids as $key => $post_id) {
 
+                $order = $key + 1;
                 update_post_meta($post_id, $data['featured_key'], '1');
                 $args = [
                     'ID'         => $post_id,
-                    'menu_order' => $key,
+                    'menu_order' => $order,
                 ];
                 $update = wp_update_post($args);
 
@@ -441,7 +445,7 @@ class WPFP_Featured_Posts
                                     update_post_meta($id, $data['featured_key'], '1');
                                     $args = [
                                         'ID'         => $id,
-                                        'menu_order' => $key,
+                                        'menu_order' => $order,
                                     ];
                                     $update = wp_update_post($args);
                                 }
@@ -638,6 +642,7 @@ class WPFP_Featured_Posts
                         'post_type'   => $post_type,
                         'post_status' => 'publish',
                         'nopaging'    => true,
+                        'orderby'     => ['menu_order' => 'ASC', 'date' => 'DESC'],
                     ]);
 
                     add_filter('the_posts', [$this, 'the_posts'], 10, 2);
@@ -646,6 +651,15 @@ class WPFP_Featured_Posts
                         array_splice($posts, $sticky_offset, 0, [$sticky_post]);
                         $sticky_offset++;
                     }
+                }
+
+                // Sort all sticky posts at the top by menu_order to match admin drag-and-drop order.
+                if ($sticky_offset > 1) {
+                    $sticky_section = array_slice($posts, 0, $sticky_offset);
+                    usort($sticky_section, function ($a, $b) {
+                        return $a->menu_order - $b->menu_order;
+                    });
+                    array_splice($posts, 0, $sticky_offset, $sticky_section);
                 }
             }
         }
@@ -761,26 +775,13 @@ class WPFP_Featured_Posts
     }
 
     /**
-     * Add pin icon styles to frontend
+     * Enqueue pin icon styles on the frontend
      */
-    public function add_pin_icon_styles()
+    public function enqueue_pin_icon_styles()
     {
-        ?>
-        <style type="text/css">
-            .wpfp-pin-icon {
-                display: inline-block;
-                vertical-align: middle;
-                line-height: 1;
-            }
-            .wpfp-pin-icon.wpfp-pin-custom img {
-                display: inline-block;
-                vertical-align: middle;
-            }
-            .wpfp-pin-icon.wpfp-pin-default {
-                margin-right: 4px;
-            }
-        </style>
-        <?php
+        wp_register_style('wpfp-pin-icon', false, [], WPFP_VERSION);
+        wp_enqueue_style('wpfp-pin-icon');
+        wp_add_inline_style('wpfp-pin-icon', '.wpfp-pin-icon{display:inline-block;vertical-align:middle;line-height:1}.wpfp-pin-icon.wpfp-pin-custom img{display:inline-block;vertical-align:middle}.wpfp-pin-icon.wpfp-pin-default{margin-right:4px}');
     }
 
     /**
@@ -800,6 +801,60 @@ class WPFP_Featured_Posts
                 'auth_callback' => function () {
                     return current_user_can('edit_posts');
                 },
+            ]);
+        }
+    }
+
+    /**
+     * Sync sticky_posts and menu_order when featured meta changes (e.g. via REST API / block editor).
+     *
+     * @param int    $meta_id
+     * @param int    $post_id
+     * @param string $meta_key
+     * @param mixed  $meta_value
+     */
+    public function sync_featured_sticky($meta_id, $post_id, $meta_key, $meta_value)
+    {
+        if (!$this->options['enable'] || empty($this->options['post_types'])) {
+            return;
+        }
+
+        $post_type = get_post_type($post_id);
+        if (!$post_type || $meta_key !== "{$post_type}_featured") {
+            return;
+        }
+
+        if (!in_array($post_type, $this->options['post_types'])) {
+            return;
+        }
+
+        $sticky_posts = get_option('sticky_posts', []);
+
+        if ($meta_value === '1') {
+            if (!in_array($post_id, $sticky_posts)) {
+                $sticky_posts[] = $post_id;
+                update_option('sticky_posts', $sticky_posts);
+            }
+
+            $post = get_post($post_id);
+            if ($post && (int) $post->menu_order === 0) {
+                $featured_key = "{$post_type}_featured";
+                $count = count($this->get_featured_sorting($post_type, $featured_key));
+                wp_update_post([
+                    'ID'         => $post_id,
+                    'menu_order' => $count,
+                ]);
+            }
+        } else {
+            $key = array_search($post_id, $sticky_posts);
+            if ($key !== false) {
+                unset($sticky_posts[$key]);
+                update_option('sticky_posts', array_values($sticky_posts));
+            }
+
+            wp_update_post([
+                'ID'         => $post_id,
+                'menu_order' => 0,
             ]);
         }
     }

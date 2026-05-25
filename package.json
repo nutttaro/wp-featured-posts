@@ -1,6 +1,6 @@
 {
 	"name": "wp-featured-posts",
-	"version": "1.1.1",
+	"version": "1.2.1",
 	"description": "WP Featured Posts plugin build tooling",
 	"scripts": {
 		"build": "wp-scripts build src/editor/index.js --output-path=build/editor",
@@ -11,7 +11,7 @@
 		"build:all": "npm run build && npm run minify"
 	},
 	"devDependencies": {
-		"@wordpress/scripts": "^30.0.0",
+		"@wordpress/scripts": "^32.2.0",
 		"clean-css-cli": "^5.6.0",
 		"uglify-js": "^3.17.0"
 	}

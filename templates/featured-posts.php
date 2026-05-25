@@ -43,19 +43,21 @@ if ( ! defined( 'ABSPATH' ) ) {
     <?php
     if ($featured_posts):
         ?>
+        <p class="description wpfp-sortable-hint"><span class="dashicons dashicons-info-outline"></span> <?php esc_html_e('Drag and drop rows to reorder featured posts. The order is saved automatically.', 'wp-featured-posts'); ?></p>
         <form action="post" id="order-featured-sorting" class="order-featured-sorting">
             <table id="table-featured-sorting" class="wp-list-table widefat fixed striped posts post-type-<?php echo esc_attr($post_type); ?>">
                 <thead>
                 <tr>
-                    <td id="order" class="manage-column" width="10%">
-                        <span>Order</span>
+                    <td id="drag" class="manage-column column-drag" width="4%"></td>
+                    <td id="order" class="manage-column" width="6%">
+                        <span><?php esc_html_e('Order', 'wp-featured-posts'); ?></span>
                     </td>
-                    <th scope="col" id="title" class="manage-column column-title column-primary" width="70%">
-                        <span>Title</span>
+                    <th scope="col" id="title" class="manage-column column-title column-primary">
+                        <span><?php esc_html_e('Title', 'wp-featured-posts'); ?></span>
                     </th>
                     <?php if ($allow_delete): ?>
                     <th scope="col" id="action" class="manage-column column-action column-primary" width="20%">
-                        <span>Action</span>
+                        <span><?php esc_html_e('Action', 'wp-featured-posts'); ?></span>
                     </th>
                     <?php endif; ?>
                 </tr>
@@ -65,17 +67,20 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <?php foreach ($featured_posts as $key => $post): ?>
 
                     <tr id="post-<?php echo esc_attr($post->ID); ?>" class="">
-                        <td class="order column-order has-row-actions column-primary page-order" data-colname="Order" width="10%">
+                        <td class="column-drag" data-colname="" width="4%">
+                            <span class="wpfp-drag-handle dashicons dashicons-menu"></span>
+                        </td>
+                        <td class="order column-order has-row-actions column-primary page-order" data-colname="Order" width="6%">
                             <span><?php echo absint(++$key); ?></span>
                         </td>
-                        <td class="title column-title has-row-actions column-primary page-title" data-colname="Title" width="70%">
+                        <td class="title column-title has-row-actions column-primary page-title" data-colname="Title">
                             <strong>
                                 <?php echo esc_html($post->post_title); ?>
                             </strong> <input type="hidden" name="post_id[]" value="<?php echo esc_attr($post->ID); ?>">
                         </td>
                         <?php if ($allow_delete): ?>
                         <td class="action column-action has-row-actions column-primary page-action" data-colname="Action" width="20%">
-                            <a href="#" data-id="<?php echo esc_attr($post->ID); ?>" data-lang="<?php echo esc_attr(defined('ICL_LANGUAGE_CODE') ? ICL_LANGUAGE_CODE : ''); ?>" data-nonce="<?php echo esc_attr(wp_create_nonce('delete-featured-sorting')); ?>">Delete</a>
+                            <a href="#" data-id="<?php echo esc_attr($post->ID); ?>" data-lang="<?php echo esc_attr(defined('ICL_LANGUAGE_CODE') ? ICL_LANGUAGE_CODE : ''); ?>" data-nonce="<?php echo esc_attr(wp_create_nonce('delete-featured-sorting')); ?>"><?php esc_html_e('Delete', 'wp-featured-posts'); ?></a>
                         </td>
                         <?php endif; ?>
                     </tr>

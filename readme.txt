@@ -3,8 +3,8 @@ Contributors: nutttaro
 Donate link: https://www.buymeacoffee.com/nutttaro
 Tags: featured-posts, featured-post, feature-posts, feature-post
 Requires at least: 4.7
-Tested up to: 6.9
-Stable tag: 1.2.0
+Tested up to: 7.0
+Stable tag: 1.2.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -46,6 +46,16 @@ You can see example code in *Featured Posts* setting
 1. How to sticky posts work
 
 == Changelog ==
+
+= 1.2.1 =
+* Compatibility: WordPress 7.0 support
+* Fix: Featured post ordering on frontend now matches admin drag-and-drop order
+* Fix: Toggling featured status in block editor sidebar now correctly updates sticky posts and sort order
+* Fix: Updated Gutenberg sidebar to import PluginDocumentSettingPanel from @wordpress/editor (deprecated from @wordpress/edit-post)
+* Fix: Replaced deprecated jQuery .submit() shorthand with .on('submit', ...) for jQuery 4.x forward compatibility
+* Fix: Removed deprecated jQuery UI .disableSelection() call
+* Enhancement: Replaced inline wp_head styles with wp_add_inline_style() for pin icon CSS
+* Enhancement: Updated @wordpress/scripts to v32
 
 = 1.2.0 =
 * Feature: Added [featured_posts] shortcode with post_type and limit attributes

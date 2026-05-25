@@ -24,8 +24,21 @@
     background-position: 92% 50% !important;
     padding-right: 30px;
 }
+.wrap-featured-sorting .wpfp-sortable-hint {
+    margin-top: 20px;
+    margin-bottom: 0;
+    color: #646970;
+}
+.wrap-featured-sorting .wpfp-sortable-hint .dashicons {
+    font-size: 16px;
+    line-height: 1.4;
+    width: 16px;
+    height: 16px;
+    margin-right: 2px;
+    vertical-align: text-top;
+}
 .wrap-featured-sorting .wp-list-table {
-    margin-top: 30px;
+    margin-top: 10px;
 }
 .wrap-featured-sorting .wp-list-table tbody tr {
     width: 100%;
@@ -42,8 +55,25 @@
     -ms-flex-align: center;
     align-items: center;
 }
+.wrap-featured-sorting .wp-list-table .column-drag {
+    text-align: center;
+    vertical-align: middle;
+    padding: 8px 4px;
+}
+.wrap-featured-sorting .wp-list-table .wpfp-drag-handle {
+    color: #c0c0c0;
+    cursor: grab;
+    font-size: 20px;
+    line-height: 1;
+}
+.wrap-featured-sorting .wp-list-table .wpfp-drag-handle:hover {
+    color: #2271b1;
+}
 .wrap-featured-sorting .wp-list-table .ui-sortable .ui-sortable-handle {
-    cursor: move;
+    cursor: grab;
+}
+.wrap-featured-sorting .wp-list-table .ui-sortable .ui-sortable-handle:active {
+    cursor: grabbing;
 }
 .wrap-featured-sorting .wp-list-table .ui-sortable .ui-sortable-helper {
     display: table;
